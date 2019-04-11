@@ -37,30 +37,36 @@ PlotColors = [
 ]
 
 # Competition Architect
-# SpreadSheetID = '1e2_pp7Ot1Dr47_K0nJLwUjQV5rG3BKgC15KEt4WQOc4'
+# SpreadSheetID = '1h8eHCD52o51jZj3ztTTAXoZ3R2fMyvF54B5L4jPgu0I'
 
 # PR
-# SpreadSheetID = '1DlhafTUMhDXYrDgpOAztGu4iKKM8cFN_buEh5Q60q0k'
+# SpreadSheetID = '1fIjCCKSMa1u66K7e9_MiHkBCOLykDGEcfq-H9Ffx8aQ'
 
 # Head Of Education
-# SpreadSheetID = '1IuPoMk-6GE2ARLhlrrpMiEQlfc9ohAJ5O7vJnLIx9uo'
+# SpreadSheetID = '1TtdnzRF5DXDmL_MaEW38Q3JpkTRd_MBMOB5FFD6M7Go'
 
 # Head Of Research
-# SpreadSheetID = '1bywg8SNT1avhH0Hyh41YBZy1CzdWCRkJja2NQFfACeU'
+#SpreadSheetID = '13pe1BzmSH1Bf-PAKnS8b-JlTy4eJR4Et3-LKZKcoQRU'
 
 # President
-SpreadSheetID = '1iABz3dVdmpokvYX8uqwrV6ciMRla2RkYjXBm6tu6rbo'
+SpreadSheetID = '1HaRjyPie3mmmXcZxpBwC6mxC2mBkzuNMmX4m-VR-5p0'
 
 # Secretary
-# SpreadSheetID = '1VWD7T20Y3Y9_R8U4_J-YZ6L78LZp1EcEoL_GQZ95K-g'
+# SpreadSheetID = '1SQKh0swkhPvdYCl1fIzDK47rKC-gPBlaYKAOx_OBl5E'
 
 # Treasurer
-# SpreadSheetID = '1wRhlaNV2XW1gSaIfuy3TxgjbMVHr-2pMMKxzU3NzM1Q'
+# SpreadSheetID = '1Tqban_9U50zGuj7PPDsrLjGapyaDMa512KRobLGN9lc'
 
 
 OAuthClientSecretJSON = 'creds.json'
+RosterFile = 'roster_file'
 
+roster = set()
 
+def fill_roster():
+	with open('roster_file') as f:
+		for line in f:
+			roster.add(line.strip())
 
 
 def print_round(round_num, tallies, titles):
@@ -68,6 +74,7 @@ def print_round(round_num, tallies, titles):
 	print("======================================================")
 	print("Round {}".format(round_num))
 	print("======================================================")
+	titles = titles[1:]
 	for i in range(len(titles)):
 		candidate_pre = titles[i]
 		candidate_name = candidate_pre[candidate_pre.index('[')+1:-1]
@@ -107,16 +114,22 @@ def perform_elections(worksheet):
 	vals = None
 	titles = worksheet.row_values(1)
 	titles = titles[1:]  # timestamps are useless
-	num_candidates = len(titles)
+	num_candidates = len(titles[1:]) # dont include emails also
 	i = 2
 	vals = worksheet.row_values(2)[1:]  # again, timestamps bad
 	ballots = []
 
 	while(vals != []):
 		ballot = {}
-		for candidate in range(num_candidates):
-			ballot[candidate] = ChoiceMap[vals[candidate]]
-		ballots.append(ballot)
+		email = vals[0]
+		username = email[:email.index('@')] # remove emaily bits
+		vals = vals[1:] # remove username
+		if username not in roster:
+			print("{} tried to vote but not in roster, now skipping...".format(username))
+		else:
+			for candidate in range(num_candidates):
+				ballot[candidate] = ChoiceMap[vals[candidate]]
+			ballots.append(ballot)
 		i+=1
 		vals = worksheet.row_values(i)[1:]
 
@@ -247,6 +260,7 @@ def plot_data(vote_data):
 	print("View Plot at {}".format(py.plot(fig, validate=False)))
 
 if __name__ == "__main__":
+	fill_roster()
 	worksheet = create_worksheet()
 	vote_data = perform_elections(worksheet)
 	plot_data(vote_data)
