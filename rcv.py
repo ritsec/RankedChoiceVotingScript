@@ -4,7 +4,7 @@ import plotly.plotly as py
 from plotly import tools
 
 # change for your account
-tools.set_credentials_file(username='[INSERT_PLOTLY_USERNAME]', api_key='[INSERT_PLOTLY_API_KEY]')
+tools.set_credentials_file(username='pontiac', api_key='••••••••••')
 
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -49,13 +49,16 @@ PlotColors = [
 #SpreadSheetID = '13pe1BzmSH1Bf-PAKnS8b-JlTy4eJR4Et3-LKZKcoQRU'
 
 # President
-SpreadSheetID = '1HaRjyPie3mmmXcZxpBwC6mxC2mBkzuNMmX4m-VR-5p0'
+#SpreadSheetID = '1HaRjyPie3mmmXcZxpBwC6mxC2mBkzuNMmX4m-VR-5p0'
 
 # Secretary
 # SpreadSheetID = '1SQKh0swkhPvdYCl1fIzDK47rKC-gPBlaYKAOx_OBl5E'
 
 # Treasurer
 # SpreadSheetID = '1Tqban_9U50zGuj7PPDsrLjGapyaDMa512KRobLGN9lc'
+
+#Test Spreadsheet
+SpreadSheetID = '1pdovgxFEVPROrQprEexxnlhjkVKV-KFY3QpfJsLnuO4'
 
 
 OAuthClientSecretJSON = 'creds.json'
@@ -260,7 +263,7 @@ def plot_data(vote_data):
 	print("View Plot at {}".format(py.plot(fig, validate=False)))
 
 if __name__ == "__main__":
-	fill_roster()
+	#fill_roster()
 	worksheet = create_worksheet()
 	vote_data = perform_elections(worksheet)
 	plot_data(vote_data)
