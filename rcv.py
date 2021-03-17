@@ -83,7 +83,7 @@ def print_round(round_num, tallies, titles):
 		candidate_name = candidate_pre[candidate_pre.index('[')+1:-1]
 		votes[candidate_name] = tallies[i]
 		print("{} -> {} votes".format(candidate_name, tallies[i]))
-	print ""
+	print("")
 	return votes
 
 def get_lowest_candidate(tallies, candidates_removed):
@@ -127,12 +127,13 @@ def perform_elections(worksheet):
 		email = vals[0]
 		username = email[:email.index('@')] # remove emaily bits
 		vals = vals[1:] # remove username
-		if username not in roster:
-			print("{} tried to vote but not in roster, now skipping...".format(username))
-		else:
-			for candidate in range(num_candidates):
-				ballot[candidate] = ChoiceMap[vals[candidate]]
-			ballots.append(ballot)
+		# if username not in roster:
+		#	print("{} tried to vote but not in roster, now skipping...".format(username))
+		#else:
+		for candidate in range(num_candidates):
+			ballot[candidate] = ChoiceMap[vals[candidate]]
+		ballots.append(ballot)
+
 		i+=1
 		vals = worksheet.row_values(i)[1:]
 
