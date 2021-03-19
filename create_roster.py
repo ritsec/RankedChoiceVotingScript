@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # create three documents: signins.txt, members.txt, and presenters.txt
-# signins.txt needs to have all the emails from the weekly signin form and the IP/IG signins
+# signins.txt needs to have all the emails from the weekly sign in form and the IP/IG sign ins
 # presenters.txt needs to have all the emails from all the presenters for this year
 # members.txt will the output file and contain a list of every active member of RITSEC for this year
 

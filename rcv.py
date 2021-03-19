@@ -1,13 +1,21 @@
 import gspread
 import random
-# import chart_studio.plotly as py
-# plotly import tools
+import chart_studio.plotly as py
+from chart_studio import tools
+from datetime import time
 
 # Plotly Credentials
-# tools.set_credentials_file(username='pontiac', api_key='K2QZNXftHzeRsnZl3SyW')
+tools.set_credentials_file(username='pontiac', api_key='K2QZNXftHzeRsnZl3SyW')
 
 # updated oauth
 from google.oauth2.service_account import Credentials
+
+# Express time in twenty-four hour format
+OpenVoteHour = 20 # the hour the poll opens
+OpenVoteMin = 50 # the minute the poll opens
+CloseVoteHour = 22 # the hour the poll closes
+CloseVoteMin = 0 # the minute the poll closes
+
 
 # Not Sure a better way to Map Human Readable to Code
 # Also, zero index ;)
@@ -120,21 +128,42 @@ def perform_elections(worksheet):
     titles = titles[1:]  # timestamps are useless
     num_candidates = len(titles[1:])  # don't include emails also
 
-    vals = worksheet.row_values(2)[1:]  # again, timestamps bad
     ballots = []
 
     for i in range(2, worksheet.row_count):
         try:
             vals = worksheet.row_values(i)[1:]
+            time_stamp = worksheet.row_values(i)[0]
         except IndexError:
             break
+
+        #Time Stamp Verification Set Up
+        time_stamp = time_stamp.split()[1]
+        # split on ":"
+        stamp_hour = time_stamp.split(":")[0]
+        stamp_min = time_stamp.split(":")[1]
+        stamp_sec = time_stamp.split(":")[2]
+
+        # create datatime objects for comparisons
+        open_stamp = time(OpenVoteHour, OpenVoteMin, 0)
+        close_stamp = time(CloseVoteHour, CloseVoteMin, 0)
+        vote_stamp = time(int(stamp_hour), int(stamp_min), int(stamp_sec))
+
         ballot = {}
         email = vals[0]
         username = email[:email.index('@')]  # remove emaily bits
         vals = vals[1:]  # remove username
         if username not in roster:
-            print("{} tried to vote but not in roster, now skipping...".format(username))
+            # checks for attendance
+            print("{} tried to vote but not eligible, now skipping...".format(username))
+        elif open_stamp > vote_stamp:
+            # checks for voting before poll was opened
+            print("{} tried to vote, but cast their vote before the poll was open, now skipping...".format(username))
+        elif vote_stamp > close_stamp:
+            # checks for voting after poll was closed
+            print("{} tried to vote, but cast their vote after the poll was closed, now skipping...".format(username))
         else:
+            # vote and voter passes all checks, let them vote
             for candidate in range(num_candidates):
                 ballot[candidate] = ChoiceMap[vals[candidate]]
             ballots.append(ballot)
@@ -267,12 +296,11 @@ def plot_data(vote_data):
     )
 
     fig = dict(data=[data], layout=layout)
+    print("View Plot at {}".format(py.plot(fig, validate=False)))
 
-
-# print("View Plot at {}".format(py.plot(fig, validate=False)))
 
 if __name__ == "__main__":
     fill_roster()
     worksheet = create_worksheet()
     vote_data = perform_elections(worksheet)
-    # plot_data(vote_data)
+    plot_data(vote_data)
