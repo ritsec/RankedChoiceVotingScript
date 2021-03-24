@@ -5,7 +5,7 @@ from chart_studio import tools
 from datetime import time
 
 # Plotly Credentials
-tools.set_credentials_file(username='pontiac', api_key='K2QZNXftHzeRsnZl3SyW')
+tools.set_credentials_file(username='INSERT_YOURS_HERE', api_key='INSERT_YOURS_HERE')
 
 # updated oauth
 from google.oauth2.service_account import Credentials

@@ -14,6 +14,7 @@ SpreadSheetID can be found by looking at the URL for the spreadsheet and finding
 #### OAuthClientSecretJSON
 This is generated for you by google :) just log in at `https://console.developers.google.com/apis/credentials` and set up a project, and add a service account with permissions and download the json file.
 More info can be found here: `https://gspread.readthedocs.io/en/latest/oauth2.html`
+You will need to add the `Sheets API` and maybe the `Drive API` to the project from the developer console. 
 
 Copy the JSON File into creds.json.
 
