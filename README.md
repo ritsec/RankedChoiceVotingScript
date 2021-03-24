@@ -29,6 +29,8 @@ Make sure that Members.txt is empty before running Create_Roster.py
 ##  Usage
 Set up the google service account, share the spreadsheet with the account.
 
+Install the requirements: `pip3 install -r requirements.txt`
+
 Run create_roster.py, then run rcv.py.
 
 
