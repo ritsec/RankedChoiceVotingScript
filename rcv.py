@@ -1,35 +1,30 @@
-import gspread
+# import gspread
 import random
-import chart_studio.plotly as py
-from chart_studio import tools
+# import chart_studio.plotly as py
+# from chart_studio import tools
 from datetime import time
+import csv
 
 # Plotly Credentials
-tools.set_credentials_file(username='INSERT_YOURS_HERE', api_key='INSERT_YOURS_HERE')
+# tools.set_credentials_file(username='INSERT_YOURS_HERE', api_key='INSERT_YOURS_HERE')
 
 # updated oauth
-from google.oauth2.service_account import Credentials
-
-# Express time in twenty-four hour format
-OpenVoteHour = 20 # the hour the poll opens
-OpenVoteMin = 50 # the minute the poll opens
-CloseVoteHour = 22 # the hour the poll closes
-CloseVoteMin = 0 # the minute the poll closes
+# from google.oauth2.service_account import Credentials
 
 
 # Not Sure a better way to Map Human Readable to Code
 # Also, zero index ;)
 ChoiceMap = {
-    u"First Choice": 0,
-    u"Second Choice": 1,
-    u"Third Choice": 2,
-    u"Fourth Choice": 3,
-    u"Fifth Choice": 4,
-    u"Sixth Choice": 5,
-    u"Seventh Choice": 6,
-    u"Eighth Choice": 7,
-    u"Ninth Choice": 8,
-    u"Tenth Choice": 9
+    u"1st": 0,
+    u"2nd": 1,
+    u"3rd": 2,
+    u"4th": 3,
+    u"5th": 4,
+    u"6th": 5,
+    u"7th": 6,
+    u"8th": 7,
+    u"9th": 8,
+    u"10th": 9
 }
 
 PlotColors = [
@@ -49,9 +44,9 @@ PlotColors = [
 # SpreadSheetID = '1Rp4YhSKWshF5DQVMInJlLXRhXBFts6ntky0aoz_mieE'
 
 # Test Spreadsheet
-SpreadSheetID = '1zcplNSc7Z9k13Y5en5UqKty_IuGku8GDOCt080ORF3E'
+# SpreadSheetID = '1zcplNSc7Z9k13Y5en5UqKty_IuGku8GDOCt080ORF3E'
 
-OAuthClientSecretJSON = 'creds.json'
+# OAuthClientSecretJSON = 'creds.json'
 RosterFile = 'members.txt'
 
 roster = set()
@@ -107,47 +102,49 @@ def get_top_candidate_in_play(ballot, candidates_removed):
 
 # Uses the credentials to get the worksheet that contains the votes
 # Returns the spreadsheet
-def create_worksheet():
-    # use creds to create a client to interact with the Google Drive API
-    scopes = [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive'
-    ]
-    credentials = Credentials.from_service_account_file(OAuthClientSecretJSON, scopes=scopes)
-    client = gspread.authorize(credentials)
+# def create_worksheet():
+#     # use creds to create a client to interact with the Google Drive API
+#     scopes = [
+#         'https://www.googleapis.com/auth/spreadsheets',
+#         'https://www.googleapis.com/auth/drive'
+#     ]
+#     credentials = Credentials.from_service_account_file(OAuthClientSecretJSON, scopes=scopes)
+#     client = gspread.authorize(credentials)
 
-    # be sure to share the results sheet with the client_email in cred.json
-    return client.open_by_key(SpreadSheetID).sheet1
+#     # be sure to share the results sheet with the client_email in cred.json
+#     return client.open_by_key(SpreadSheetID).sheet1
 
 
 # Algorithm for a Ranked-Choice-Vote Election
 # Takes the worksheet with the votes as a parameter
 # Returns a list of the vote_data
 def perform_elections(worksheet):
-    titles = worksheet.row_values(1)
+    reader = csv.reader(worksheet, delimiter=',', quotechar='|')
+    titles = next(reader)
     titles = titles[1:]  # timestamps are useless
     num_candidates = len(titles[1:])  # don't include emails also
 
     ballots = []
 
-    for i in range(2, worksheet.row_count):
+    for row in reader:
         try:
-            vals = worksheet.row_values(i)[1:]
-            time_stamp = worksheet.row_values(i)[0]
+            # vals = worksheet.row_values(i)[1:]
+            vals = row[1:]
+            # time_stamp = worksheet.row_values(i)[0]
         except IndexError:
             break
 
-        #Time Stamp Verification Set Up
-        time_stamp = time_stamp.split()[1]
-        # split on ":"
-        stamp_hour = time_stamp.split(":")[0]
-        stamp_min = time_stamp.split(":")[1]
-        stamp_sec = time_stamp.split(":")[2]
+        # #Time Stamp Verification Set Up
+        # time_stamp = time_stamp.split()[1]
+        # # split on ":"
+        # stamp_hour = time_stamp.split(":")[0]
+        # stamp_min = time_stamp.split(":")[1]
+        # stamp_sec = time_stamp.split(":")[2]
 
         # create datatime objects for comparisons
-        open_stamp = time(OpenVoteHour, OpenVoteMin, 0)
-        close_stamp = time(CloseVoteHour, CloseVoteMin, 0)
-        vote_stamp = time(int(stamp_hour), int(stamp_min), int(stamp_sec))
+        # open_stamp = time(OpenVoteHour, OpenVoteMin, 0)
+        # close_stamp = time(CloseVoteHour, CloseVoteMin, 0)
+        # vote_stamp = time(int(stamp_hour), int(stamp_min), int(stamp_sec))
 
         ballot = {}
         email = vals[0]
@@ -156,12 +153,12 @@ def perform_elections(worksheet):
         if username not in roster:
             # checks for attendance
             print("{} tried to vote but not eligible, now skipping...".format(username))
-        elif open_stamp > vote_stamp:
-            # checks for voting before poll was opened
-            print("{} tried to vote, but cast their vote before the poll was open, now skipping...".format(username))
-        elif vote_stamp > close_stamp:
-            # checks for voting after poll was closed
-            print("{} tried to vote, but cast their vote after the poll was closed, now skipping...".format(username))
+        # elif open_stamp > vote_stamp:
+        #     # checks for voting before poll was opened
+        #     print("{} tried to vote, but cast their vote before the poll was open, now skipping...".format(username))
+        # elif vote_stamp > close_stamp:
+        #     # checks for voting after poll was closed
+        #     print("{} tried to vote, but cast their vote after the poll was closed, now skipping...".format(username))
         else:
             # vote and voter passes all checks, let them vote
             for candidate in range(num_candidates):
@@ -227,80 +224,80 @@ def get_colors(candidate_labels):
     return colors
 
 
-# Does the plotly
-def plot_data(vote_data):
-    candidate_labels = get_candidate_labels(vote_data)
-    colors = get_colors(candidate_labels)
+# # Does the plotly
+# def plot_data(vote_data):
+#     candidate_labels = get_candidate_labels(vote_data)
+#     colors = get_colors(candidate_labels)
 
-    prev_round = vote_data[0]
+#     prev_round = vote_data[0]
 
-    source = []
-    target = []
-    value = []
+#     source = []
+#     target = []
+#     value = []
 
-    for round_num in range(1, len(vote_data)):
-        curr_round = vote_data[round_num]
+#     for round_num in range(1, len(vote_data)):
+#         curr_round = vote_data[round_num]
 
-        # get dropped candidate index
-        dropped_candidate = get_dropped_candidate(prev_round, curr_round)
-        dropped_candidate_label = dropped_candidate + '-Round ' + str(round_num - 1)
-        dropped_candidate_index = candidate_labels.index(dropped_candidate_label)
+#         # get dropped candidate index
+#         dropped_candidate = get_dropped_candidate(prev_round, curr_round)
+#         dropped_candidate_label = dropped_candidate + '-Round ' + str(round_num - 1)
+#         dropped_candidate_index = candidate_labels.index(dropped_candidate_label)
 
-        for candidate in curr_round:
-            # carry values from previous round, if not dropped
-            if curr_round[candidate] != 0:
-                candidate_prev_round_label = candidate + '-Round ' + str(round_num - 1)
-                candidate_prev_round_index = candidate_labels.index(candidate_prev_round_label)
-                candidate_prev_round_val = prev_round[candidate]
-                candidate_curr_round_label = candidate + '-Round ' + str(round_num)
-                candidate_curr_round_index = candidate_labels.index(candidate_curr_round_label)
-                source.append(candidate_prev_round_index)
-                target.append(candidate_curr_round_index)
-                value.append(candidate_prev_round_val)
+#         for candidate in curr_round:
+#             # carry values from previous round, if not dropped
+#             if curr_round[candidate] != 0:
+#                 candidate_prev_round_label = candidate + '-Round ' + str(round_num - 1)
+#                 candidate_prev_round_index = candidate_labels.index(candidate_prev_round_label)
+#                 candidate_prev_round_val = prev_round[candidate]
+#                 candidate_curr_round_label = candidate + '-Round ' + str(round_num)
+#                 candidate_curr_round_index = candidate_labels.index(candidate_curr_round_label)
+#                 source.append(candidate_prev_round_index)
+#                 target.append(candidate_curr_round_index)
+#                 value.append(candidate_prev_round_val)
 
-            # values being spread from dropped candidate
-            moved_val = curr_round[candidate] - prev_round[candidate]
-            if moved_val > 0:
-                target_label = candidate + '-Round ' + str(round_num)
-                target_index = candidate_labels.index(target_label)
-                source.append(dropped_candidate_index)
-                target.append(target_index)
-                value.append(moved_val)
+#             # values being spread from dropped candidate
+#             moved_val = curr_round[candidate] - prev_round[candidate]
+#             if moved_val > 0:
+#                 target_label = candidate + '-Round ' + str(round_num)
+#                 target_index = candidate_labels.index(target_label)
+#                 source.append(dropped_candidate_index)
+#                 target.append(target_index)
+#                 value.append(moved_val)
 
-        # next round
-        prev_round = vote_data[round_num]
+#         # next round
+#         prev_round = vote_data[round_num]
 
-    data = dict(
-        type='sankey',
-        node=dict(
-            pad=30,
-            thickness=20,
-            line=dict(
-                color="black",
-                width=0.5
-            ),
-            label=candidate_labels,
-            color=colors
-        ),
-        link=dict(
-            source=source,
-            target=target,
-            value=value
-        ))
+#     data = dict(
+#         type='sankey',
+#         node=dict(
+#             pad=30,
+#             thickness=20,
+#             line=dict(
+#                 color="black",
+#                 width=0.5
+#             ),
+#             label=candidate_labels,
+#             color=colors
+#         ),
+#         link=dict(
+#             source=source,
+#             target=target,
+#             value=value
+#         ))
 
-    layout = dict(
-        title="RITSEC Elections",
-        font=dict(
-            size=16
-        )
-    )
+#     layout = dict(
+#         title="RITSEC Elections",
+#         font=dict(
+#             size=16
+#         )
+#     )
 
-    fig = dict(data=[data], layout=layout)
-    print("View Plot at {}".format(py.plot(fig, validate=False)))
+#     fig = dict(data=[data], layout=layout)
+#     print("View Plot at {}".format(py.plot(fig, validate=False)))
 
 
 if __name__ == "__main__":
     fill_roster()
-    worksheet = create_worksheet()
+    worksheet = open("results.csv", "r")
     vote_data = perform_elections(worksheet)
-    plot_data(vote_data)
+    # plot_data(vote_data)
